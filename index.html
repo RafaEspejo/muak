@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6dfe1">
+<title>Una cosa para ti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6dfe1; --paper2:#fbeeee; --plum:#3b1f2e; --rose:#c4566f;
+  --sage:#7f9c7a; --muted:#7a5a66;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--paper);color:var(--plum);font-family:var(--sans);
+  padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);
+  overflow-x:hidden;
+}
+.bg{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.bg span{position:absolute;bottom:-40px;font-size:18px;opacity:.35;animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-110vh) rotate(25deg)}}
+main{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column;max-width:460px;margin:0 auto;padding:22px 24px 28px}
+.dots{display:flex;gap:8px;justify-content:center;padding:6px 0 0}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--plum);opacity:.18;transition:.3s}
+.dots i.on{opacity:1;background:var(--rose);width:22px;border-radius:8px}
+.step{display:none;flex:1;flex-direction:column;justify-content:center;gap:20px;padding:24px 0;text-align:left}
+.step.active{display:flex;animation:in .5s ease both}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+h1,h2{font-family:var(--serif);font-weight:600;font-style:italic;line-height:1.12;letter-spacing:-.01em}
+h1{font-size:clamp(2.4rem,12vw,3.4rem)}
+h2{font-size:clamp(2rem,9.5vw,2.7rem)}
+p{font-size:1.08rem;line-height:1.55;color:var(--muted);max-width:34ch}
+.emoji{font-size:3rem;line-height:1}
+button{font:inherit;cursor:pointer;border:0}
+.btn{background:var(--plum);color:var(--paper2);padding:16px 26px;border-radius:999px;font-weight:700;font-size:1.05rem;align-self:flex-start;transition:transform .15s}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:transparent;color:var(--plum);box-shadow:inset 0 0 0 2px var(--plum)}
+.btn[hidden]{display:none}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+:focus-visible{outline:3px solid var(--rose);outline-offset:3px}
+
+/* medidor de suerte */
+.meter{height:16px;border-radius:99px;background:var(--paper2);box-shadow:inset 0 0 0 2px rgba(59,31,46,.15);overflow:hidden}
+.meter b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sage),var(--rose));border-radius:99px;transition:width .4s cubic-bezier(.3,1.4,.5,1)}
+.meter-msg{font-family:var(--serif);font-style:italic;font-size:1.15rem;min-height:1.6em;color:var(--plum)}
+
+/* opciones */
+.chips{display:flex;flex-direction:column;gap:12px}
+.chip{background:var(--paper2);color:var(--plum);padding:16px 18px;border-radius:18px;text-align:left;font-weight:500;font-size:1.05rem;box-shadow:inset 0 0 0 2px rgba(59,31,46,.15);transition:.2s}
+.chip.sel{background:var(--plum);color:var(--paper2);box-shadow:none}
+
+/* vale */
+.ticket{position:relative;background:var(--paper2);border-radius:20px;padding:24px 22px 22px;box-shadow:0 14px 30px -14px rgba(59,31,46,.45);transform:rotate(-1.5deg)}
+.ticket::before,.ticket::after{content:"";position:absolute;top:58%;width:26px;height:26px;border-radius:50%;background:var(--paper)}
+.ticket::before{left:-13px}.ticket::after{right:-13px}
+.ticket .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ticket h3{font-family:var(--serif);font-style:italic;font-weight:600;font-size:1.9rem;line-height:1.1}
+.ticket .flower{font-size:2.6rem}
+.ticket .cut{border-top:2px dashed rgba(59,31,46,.3);margin:20px 0 14px}
+.ticket small{display:block;font-size:.88rem;color:var(--muted);line-height:1.5}
+.stamp{display:inline-block;margin-top:12px;padding:6px 12px;border:2px solid var(--sage);color:var(--sage);border-radius:8px;font-weight:700;font-size:.85rem;transform:rotate(-3deg)}
+
+.petal{position:fixed;top:-30px;z-index:5;pointer-events:none;animation:fall 3s linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(360deg);opacity:.8}}
+@media (prefers-reduced-motion:reduce){
+  .bg{display:none}.step.active{animation:none}.petal{display:none}
+}
+</style>
+</head>
+<body>
+<div class="bg" id="bg" aria-hidden="true"></div>
+
+<main>
+  <div class="dots" id="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+  <!-- 1. Bienvenida -->
+  <section class="step active">
+    <div class="emoji">💌</div>
+    <h1>Hola, <span class="her">Amalita ;)</span></h1>
+    <p>He preparado una cosilla pa ti. Son pocos pasos ylo prometo.</p>
+    <button class="btn" data-next>Abrir</button>
+  </section>
+
+  <!-- 2. Suerte -->
+  <section class="step">
+    <div class="emoji">🍀</div>
+    <h2>Mañana seguro que el trabajo saldrá mejor que hoy, no queremos compis petardas...</h2>
+    <p>Quiero que vayas con toda la suerte y energia del mundo. Pulsa el botón y la cargamos juntos.</p>
+    <div class="meter" aria-label="Nivel de suerte"><b id="bar"></b></div>
+    <div class="meter-msg" id="luckMsg" aria-live="polite"></div>
+    <div class="row">
+      <button class="btn" id="luckBtn">Cargar suerte</button>
+      <button class="btn" id="luckNext" data-next hidden>Seguir</button>
+    </div>
+  </section>
+
+  <!-- 3. Invitación -->
+  <section class="step">
+    <div class="emoji">🌿</div>
+    <h2>¿Te vienes al Muji a mirar cosillas conmigo este lunes?</h2>
+    <p>Paseito, mirar cosas bonitas y que me cuentes qué tal te fue la fiesta de mascaras .</p>
+    <div class="row">
+      <button class="btn" id="yes">Sí, me apunto</button>
+      <button class="btn ghost" id="no">No</button>
+    </div>
+  </section>
+
+  <!-- 4. Hora -->
+  <section class="step">
+    <div class="emoji">🕒</div>
+    <h2>Perfecto. ¿Cuándo te viene mejor?</h2>
+    <div class="chips" id="chips">
+      <button class="chip" data-v="por la mañana">Por la mañana</button>
+      <button class="chip" data-v="por la tarde">Por la tarde</button>
+      <button class="chip" data-v="a la hora que tú me digas">A la hora que tú me digas</button>
+    </div>
+    <button class="btn" id="timeNext" data-next hidden>Continuar</button>
+  </section>
+
+  <!-- 5. Vale -->
+  <section class="step">
+    <h2>Y esto es para ti</h2>
+    <div class="ticket">
+      <div class="top">
+        <h3>Vale por unas flores</h3>
+        <div class="flower">💐</div>
+      </div>
+      <div class="cut"></div>
+      <small>Para: <strong class="her">Amalia</strong></small>
+      <small>De: <strong id="me">Rafa</strong></small>
+      <small>Se canjea el lunes, después de Muji. Sin caducidad.</small>
+      <span class="stamp">Cita: lunes, <span id="when">a la hora que tú me digas</span></span>
+    </div>
+    <button class="btn" id="send">Confirmar la cita</button>
+    <p style="font-size:.92rem">Al pulsar se abre un mensaje ya escrito para que me respondas.</p>
+  </section>
+</main>
+
+<script>
+/* ====== EDITA ESTO ====== */
+const HER   = "Amalia";            // el nombre de ella
+const ME    = "Rafa";         // tu nombre
+const PHONE = "3462835666";                  // tu móvil con prefijo y sin + ni espacios, ej: "34600111222". Si lo dejas vacío, ella elegirá el contacto.
+/* ======================== */
+
+document.querySelectorAll('.her').forEach(e => e.textContent = HER);
+document.getElementById('me').textContent = ME;
+
+const steps = [...document.querySelectorAll('.step')];
+const dots  = [...document.querySelectorAll('#dots i')];
+let cur = 0, when = "a la hora que tú me digas";
+
+function go(n){
+  steps[cur].classList.remove('active');
+  cur = n;
+  steps[cur].classList.add('active');
+  dots.forEach((d,i)=>d.classList.toggle('on', i===cur));
+  window.scrollTo({top:0});
+}
+dots[0].classList.add('on');
+document.querySelectorAll('[data-next]').forEach(b => b.addEventListener('click', () => go(cur+1)));
+
+/* suerte */
+const msgs = ["", "Va cogiendo carga…", "Ya casi…", "Cargada al máximo. Mañana lo vas a hacer genial."];
+let luck = 0;
+const bar = document.getElementById('bar'), luckMsg = document.getElementById('luckMsg');
+document.getElementById('luckBtn').addEventListener('click', e => {
+  if (luck >= 3) return;
+  luck++;
+  bar.style.width = Math.round(luck/3*100) + '%';
+  luckMsg.textContent = msgs[luck];
+  if (navigator.vibrate) navigator.vibrate(30);
+  if (luck === 3){
+    e.target.hidden = true;
+    document.getElementById('luckNext').hidden = false;
+    petals(['🍀','✨']);
+  }
+});
+
+/* invitación */
+const noTexts = ["No","¿Segura?","Piénsalo un poco…","Hay flores de por medio","Venga, di que sí"];
+let nos = 0;
+const yes = document.getElementById('yes'), no = document.getElementById('no');
+no.addEventListener('click', () => {
+  nos++;
+  no.textContent = noTexts[Math.min(nos, noTexts.length-1)];
+  yes.style.transform = 'scale(' + Math.min(1 + nos*0.12, 1.5) + ')';
+  yes.style.transformOrigin = 'left center';
+});
+yes.addEventListener('click', () => { petals(['🌷','🌸','💗']); setTimeout(()=>go(cur+1), 700); });
+
+/* hora */
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+  c.classList.add('sel');
+  when = c.dataset.v;
+  document.getElementById('when').textContent = when;
+  document.getElementById('timeNext').hidden = false;
+}));
+
+/* confirmar por WhatsApp */
+document.getElementById('send').addEventListener('click', () => {
+  petals(['💐','🌷']);
+  const t = `¡Sí! Quedamos el lunes en Muji ${when}. Y me guardo mi vale de flores 💐`;
+  window.open('https://wa.me/' + PHONE + '?text=' + encodeURIComponent(t), '_blank');
+});
+
+/* decoración */
+function petals(list){
+  for (let i=0;i<26;i++){
+    const s = document.createElement('span');
+    s.className = 'petal';
+    s.textContent = list[i % list.length];
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.fontSize = (16 + Math.random()*18) + 'px';
+    s.style.animationDelay = (Math.random()*0.8) + 's';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 4200);
+  }
+}
+const bg = document.getElementById('bg');
+for (let i=0;i<9;i++){
+  const s = document.createElement('span');
+  s.textContent = ['♡','✿','♡'][i%3];
+  s.style.left = (Math.random()*95) + '%';
+  s.style.animationDuration = (14 + Math.random()*14) + 's';
+  s.style.animationDelay = (-Math.random()*20) + 's';
+  s.style.color = '#c4566f';
+  bg.appendChild(s);
+}
+</script>
+</body>
+</html>
